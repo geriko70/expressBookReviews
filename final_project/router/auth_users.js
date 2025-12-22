@@ -9,22 +9,37 @@ const isValid = (username)=>{ //returns boolean
 //write code to check is the username is valid
 }
 
-const authenticatedUser = (username,password)=>{ //returns boolean
-    let validuser=users.filter((user)=>{
-        return (user.username===username && user.password===password);
+const authenticatedUser = (username, password) => {
+    // Usiamo il nome coerente: validUsers
+    let validUsers = users.filter((user) => {
+        return user.username === username && user.password === password;
     });
 
-    if(validusers.length>0){
+    // Ora il nome corrisponde esattamente a quello sopra
+    if (validUsers.length > 0) {
         return true;
-    }else{
+    } else {
         return false;
     }
 }
 
 //only registered users can login
 regd_users.post("/login", (req,res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+    const username=req.body.username;
+    const password=req.body.password;
+    if(authenticatedUser(username,password)){
+        let accessToken=jwt.sign({
+            data:password
+        },'access',{expiresIn:60*60});
+
+        req.session.authorization={
+            accessToken,username
+        }
+        return res.status(208).json({message:"Valid login. "});
+    }else{
+        return res.status(208).json({message:"Invalid login. Check username and passowrd"});
+    }
+
 });
 
 // Add a book review
