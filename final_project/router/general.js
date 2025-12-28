@@ -28,40 +28,72 @@ public_users.post("/register", (req,res) => {
 });
 
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
-  res.send(JSON.stringify(books,null,4));
+  public_users.get('/', function (req, res) {
+  
+  const getBooks = new Promise((resolve, reject) => {
+    if (books) {
+      resolve(books);
+    } else {
+      reject("Impossibile recuperare i libri");
+    }
+  });
+
+  getBooks
+    .then((data) => {
+      return res.status(200).json(data);
+    })
+    .catch((err) => {
+      return res.status(500).json({ message: err });
+    });
 });
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
     const isbn=req.params.isbn;
-    if(books[isbn]){
-        res.send(books[isbn]);
-    }else{
-        res.send("Unable to find a book with the isbn: "+isbn);
-    }
+    const getBooks=new Promise((resolve,reject)=>{
+        if(isbn){
+            if(books[isbn]){
+                resolve(books[isbn]);
+            }else{
+                return reject("books with this isbn isn't present");
+            }
+        }else{
+            return reject("Isbn not present");
+        }
+    })
+
+    getBooks.then((book)=>res.status(203).json({book})).catch((err)=> res.status(403).json({message:"error"}));
 });
   
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
   const author=req.params.author;
   let authorBooks=Object.values(books).filter((book)=>book.author===author)
-  if(authorBooks.length>0){
-    res.send(JSON.stringify(authorBooks,null,4));
-  }else{
-    res.send("Unable to find a book of: "+author);
-  }
+  const getBooks=new Promise((resolve,reject)=>{
+    if(authorBooks.length>0){
+        resolve(authorBooks);
+    }else{
+        reject("There is no author named "+author);
+    }
+
+  })
+  getBooks.then((book)=> res.status(203).json(book)).catch((err)=>res.status(203).json("error"));
+
 });
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
  const title=req.params.title;
  let titleBooks=Object.values(books).filter((book)=>book.title===title);
- if(titleBooks.length>0){
-    res.send(JSON.stringify(titleBooks,null,4)); 
- }else{
-    res.send("Unable to find a book with this title: "+title);
- }
+ const getBooks=new Promise((resolve,reject)=>{
+    if(titleBooks.length>0){
+        resolve(titleBooks);
+    }else{
+        reject("There is no book named "+title);
+    }
+
+  })
+  getBooks.then((book)=> res.status(203).json(book)).catch((err)=>res.status(203).json("error"));
 });
 
 //  Get book review
