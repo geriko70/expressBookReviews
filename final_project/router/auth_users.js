@@ -44,32 +44,24 @@ regd_users.post("/login", (req,res) => {
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
+    const isbn=req.params.isbn;
     const review=req.body.review;
-    if(review){
-    if(req.session.authorization){
-        let username=req.session.authorization.username;
-        let isbn=req.params.isbn;
-        if(isbn){
-            let isbnBook=Object.values(books).filter((book)=>book.isbn===isbn);
-            if(isbnBook){
-                let index=books[isbn].reviews.findIndex(rev=>rev.startsWith('${username}:'));
-                if(index!=-1){
-                    books[isbn].review[index]='${username}:${review}';
-                }else{
-                    books[isbn].review.push('${username}:${review}');
-                }
+    const username=req.session.authorization.username;
+
+    if(isbn){
+        if(books[isbn]){
+            if(review){
+                books[isbn].reviews[username]=review;
+                return res.status(203).json({message:"thanks for the review!"});
             }else{
-                return res.status(400).json({message:"Book not found"});
+                return res.status(403).json({message:"review not present"});
             }
         }else{
-            return res.status(400).json({message:"Invalid ISBN"});
+            return res.status(403).json({message:"isbn not valid"});
         }
     }else{
-        return res.status(400).json({message:"Invalid session, log again"});
+        return res.status(403).json({message:"isbn not present"});
     }
-}else{
-    return res.status(400).json({message:"review not valid"});
-}
 });
 
 module.exports.authenticated = regd_users;
